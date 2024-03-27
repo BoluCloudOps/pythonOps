@@ -19,7 +19,7 @@ pipeline {
             steps {
                 script {
                     git credentialsId: "github",
-                        url: "https://github.com/BoluCloudOps/gitops_argocd_project.git",
+                        url: "https://github.com/BoluCloudOps/pythonOps.git",
                         branch: "main"
                 }
             }
