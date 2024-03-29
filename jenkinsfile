@@ -10,33 +10,29 @@ pipeline {
     stages {
         stage("Clean workspace") {
             steps {
-                script {
-                    cleanWs()
-                }
+                cleanWs()
             }
         }
         stage("Checkout SCM") {
             steps {
-                script {
-                    git credentialsId: "github",
-                        url: "https://github.com/BoluCloudOps/pythonOps.git",
-                        branch: "main"
-                }
+                git credentialsId: "github",
+                    url: "https://github.com/BoluCloudOps/pythonOps.git",
+                    branch: "main"
             }
         }
         stage("Build docker Image") {
             steps {
                 script {
-                    docker_image = docker.build "${IMAGE_NAME}"
+                    docker.build("${IMAGE_NAME}:${BUILD_NUMBER}")
                 }
             }
         }
         stage("Push Docker Image") {
             steps {
                 script {
-                    docker.withRegistry("", REGISTRY_CREDS){
-                        docker_image.push("$BUILD_NUMBER")
-                        docker_image.push("latest")
+                    docker.withRegistry('', REGISTRY_CREDS) {
+                        docker.image("${IMAGE_NAME}:${BUILD_NUMBER}").push()
+                        docker.image("${IMAGE_NAME}:latest").push()
                     }
                 }
             }
