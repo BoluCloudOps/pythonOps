@@ -28,8 +28,10 @@ pipeline {
         stage("Build docker Image") {
             steps {
                 script {
-                    dir('/var/lib/jenkins/workspace/jenkins_agrocd_Ops') {  // Adjusted workspace path
+                    dir('/var/lib/jenkins/workspace/jenkins_agrocd_Ops') {
+                        // Adjusted workspace path
                         docker.build("${IMAGE_NAME}:${BUILD_NUMBER}")
+                        docker.image("${IMAGE_NAME}:${BUILD_NUMBER}").push()
                     }
                 }
             }
@@ -38,9 +40,26 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('', REGISTRY_CREDS) {
-                        docker.image("${IMAGE_NAME}:${BUILD_NUMBER}").push()
+                        // Tag the image as latest before pushing it
+                        docker.image("${IMAGE_NAME}:${BUILD_NUMBER}").tag("${IMAGE_NAME}:latest")
                         docker.image("${IMAGE_NAME}:latest").push()
                     }
+                }
+            }
+        }
+
+        stage("Cleanup Docker Environment") {
+            steps {
+                script {
+                    // Stop and remove all running containers
+                   // sh "docker stop \$(docker ps -q) || true"
+                   // sh "docker rm \$(docker ps -aq) || true"
+                    
+                    // Remove all Docker images
+                    sh "docker rmi -f \$(docker images -q) || true"
+                    
+                    // Optionally, prune all Docker system resources (containers, images, volumes, networks)
+                    // sh "docker system prune -af"
                 }
             }
         }
